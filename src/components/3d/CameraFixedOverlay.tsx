@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { useStore } from '../../store/useStore'
 
 export function CameraFixedOverlay() {
-    const { camera, size } = useThree()
+    const { camera } = useThree()
     const groupRef = useRef<THREE.Group>(null)
 
     // We attach this group to the camera in useEffect?? 
@@ -23,10 +23,8 @@ export function CameraFixedOverlay() {
         if (groupRef.current) {
             groupRef.current.position.copy(camera.position)
             groupRef.current.quaternion.copy(camera.quaternion)
-            // Move slightly forward so it's visible??
-            // Actually, if we copy position/rot, we are AT the camera.
-            // We need to translate Z forward.
-            groupRef.current.translateZ(-10) // 10 units in front of camera
+            // Move translating Z forward relative to camera orientation
+            groupRef.current.translateZ(-10)
         }
     })
 
@@ -47,9 +45,7 @@ export function CameraFixedOverlay() {
     return (
         <group ref={groupRef}>
             {/* Text: Top Center */}
-            {/* At z=-10, visible height approx: 2 * 10 * tan(45/2) ~ 8.28 units high? 
-                 Let's assume default FOV 45.
-             */}
+            {/* renderOrder=999 + depthTest=false ensures it renders ON TOP of everything */}
             <Text
                 position={[0, 3.5, 0]} // Roughly top
                 fontSize={0.8}
@@ -59,6 +55,8 @@ export function CameraFixedOverlay() {
                 font="https://fonts.gstatic.com/s/greatvibes/v14/RWm99F8kLExjiGqabsAw7_si.woff"
                 outlineWidth={0.02}
                 outlineColor="#000000"
+                renderOrder={999}
+                depthTest={false}
             >
                 Merry Christmas
             </Text>
@@ -94,13 +92,13 @@ function AttachedWebcam() {
 
     // Place at bottom right
     return (
-        <mesh position={[6, -3.5, 0]}>
+        <mesh position={[6, -3.5, 0]} renderOrder={999}>
             <planeGeometry args={[2.4, 1.8]} />
             {/* 4:3 aspect, scaled down */}
-            <meshBasicMaterial map={videoTexture} />
-            <lineSegments>
+            <meshBasicMaterial map={videoTexture} depthTest={false} />
+            <lineSegments renderOrder={999}>
                 <edgesGeometry args={[new THREE.PlaneGeometry(2.4, 1.8)]} />
-                <lineBasicMaterial color="#d4af37" linewidth={2} />
+                <lineBasicMaterial color="#d4af37" linewidth={2} depthTest={false} />
             </lineSegments>
         </mesh>
     )

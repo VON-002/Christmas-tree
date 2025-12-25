@@ -12,7 +12,7 @@ export function OverlayText() {
             position={[0, yPos, 0]}
             fontSize={1.5}
             color="#d4af37" // Christmas Gold
-            font="https://fonts.gstatic.com/s/greatvibes/v14/RWm99F8kLExjiGqabsAw7_si.woff" // Great Vibes cursive font
+            // font removed for stability
             anchorX="center"
             anchorY="middle"
             outlineWidth={0.05}

@@ -1,12 +1,15 @@
 import { useRef, useState } from 'react'
 import { useStore } from '../../store/useStore'
-import { Upload, Save, Share2, Trash2, Plus } from 'lucide-react'
+import { Upload, Save, Share2, Trash2, Plus, Video, X } from 'lucide-react'
 
 const ControlPanel = () => {
-    const { photos, addPhoto, setPhotos, activePresetId, savePreset, updatePreset, loadPreset, presets: rawPresets, renamePreset, deletePreset } = useStore()
+    const { photos, addPhoto, setPhotos, activePresetId, savePreset, updatePreset, loadPreset, presets: rawPresets, renamePreset, deletePreset, isPreviewMode, setIsPreviewMode } = useStore()
     const presets = rawPresets || []
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [isSharing, setIsSharing] = useState(false)
+    const [isRecording, setIsRecording] = useState(false)
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+    const chunksRef = useRef<Blob[]>([])
 
     // Helper: Resize image and convert to Base64
     const processImage = (file: File): Promise<string> => {
@@ -137,6 +140,66 @@ const ControlPanel = () => {
         }
     }
 
+
+
+
+
+    // Fix: actually store the recorder
+    const handleToggleRecord = () => {
+        if (isRecording) {
+            mediaRecorderRef.current?.stop()
+            setIsRecording(false)
+        } else {
+            const canvas = document.querySelector('canvas')
+            if (!canvas) return
+            const stream = canvas.captureStream(60)
+            const options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 }
+            try {
+                const recorder = new MediaRecorder(stream, options)
+                mediaRecorderRef.current = recorder
+                chunksRef.current = []
+                recorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunksRef.current.push(e.data)
+                }
+                recorder.onstop = () => {
+                    const blob = new Blob(chunksRef.current, { type: 'video/webm' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `christmas-tree-${Date.now()}.webm`
+                    a.click()
+                }
+                recorder.start()
+                setIsRecording(true)
+            } catch (e) {
+                console.error(e)
+                alert("Recording not supported.")
+            }
+        }
+    }
+
+    if (isPreviewMode) {
+        return (
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-black/60 backdrop-blur-xl px-6 py-3 rounded-full border border-white/10 shadow-2xl transition-all hover:bg-black/70">
+                <button
+                    onClick={handleToggleRecord}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                >
+                    {isRecording ? <><div className="w-3 h-3 bg-white rounded-sm" /> Stop Recording</> : <><div className="w-3 h-3 bg-red-500 rounded-full" /> Start Recording</>}
+                </button>
+
+                {!isRecording && (
+                    <button
+                        onClick={() => setIsPreviewMode(false)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm bg-white/10 text-white hover:bg-white/20 transition-all"
+                    >
+                        <X size={16} /> Exit Preview
+                    </button>
+                )}
+            </div>
+        )
+    }
+
     return (
         <div className="absolute top-6 right-6 z-50 flex flex-col gap-3 w-64 pointer-events-none">
             {/* Main Panel */}
@@ -146,7 +209,12 @@ const ControlPanel = () => {
                     <h2 className="text-sm font-serif text-christmas-gold tracking-widest uppercase">
                         Decorations
                     </h2>
-                    <span className="text-[10px] text-white/30">{photos.length} / 20</span>
+                    <div className="flex gap-2">
+                        <button onClick={() => setIsPreviewMode(true)} className="text-white/50 hover:text-white transition-colors" title="Preview & Record">
+                            <Video size={14} />
+                        </button>
+                        <span className="text-[10px] text-white/30">{photos.length} / 20</span>
+                    </div>
                 </div>
 
                 <div className="flex gap-2 mb-3">

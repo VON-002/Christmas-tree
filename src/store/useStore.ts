@@ -36,6 +36,8 @@ interface AppState {
 
     activePresetId: string | null
     presets: Preset[]
+    isPreviewMode: boolean
+    setIsPreviewMode: (val: boolean) => void
     savePreset: (name: string) => void
     updatePreset: () => void
     loadPreset: (id: string) => void
@@ -73,6 +75,8 @@ export const useStore = create<AppState>()(
 
             presets: [],
             activePresetId: null,
+            isPreviewMode: false,
+            setIsPreviewMode: (val) => set({ isPreviewMode: val }),
 
             savePreset: (name) => set((state) => ({
                 presets: [...state.presets, { id: Math.random().toString(36).substr(2, 9), name, photos: [...state.photos] }],

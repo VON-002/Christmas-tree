@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useStore } from '../../store/useStore'
 import { Upload, Save, Share2, Trash2, Plus } from 'lucide-react'
 
@@ -6,6 +6,7 @@ const ControlPanel = () => {
     const { photos, addPhoto, setPhotos, activePresetId, savePreset, updatePreset, loadPreset, presets: rawPresets, renamePreset, deletePreset } = useStore()
     const presets = rawPresets || []
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const [isSharing, setIsSharing] = useState(false)
 
     // Helper: Resize image and convert to Base64
     const processImage = (file: File): Promise<string> => {
@@ -80,7 +81,7 @@ const ControlPanel = () => {
         }
     }
 
-    const handleShare = () => {
+    const handleShare = async () => {
         if (photos.length === 0) {
             alert("No photos to share! Please upload photos first.")
             return
@@ -90,20 +91,37 @@ const ControlPanel = () => {
             alert("⚠️ Warning: You are sharing a Localhost link.\n\nOthers cannot access this link.\nPlease deploy your app (Netlify/Vercel) first, then open the public URL to share.")
         }
 
-        const data = JSON.stringify(photos)
-        const encoded = encodeURIComponent(btoa(data))
-        const url = `${window.location.origin}${window.location.pathname}#data=${encoded}`
+        setIsSharing(true)
+        try {
+            const response = await fetch('/api/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photos }),
+            })
 
-        navigator.clipboard.writeText(url).then(() => {
-            alert("Share link copied! \n\n(Send this URL to others to show them your tree)")
-        }).catch(() => {
-            alert("Failed to copy link. Please manually copy the URL bar if it updated.")
-        })
+            if (!response.ok) throw new Error('Network response was not ok')
+
+            const { id } = await response.json()
+            const url = `${window.location.origin}/?id=${id}`
+
+            navigator.clipboard.writeText(url).then(() => {
+                alert("Short link copied! \n\n" + url)
+            }).catch(() => {
+                alert("Link generated but copy failed: " + url)
+            })
+        } catch (error) {
+            console.error("Share failed:", error)
+            alert("Failed to generate share link. Please try again.")
+        } finally {
+            setIsSharing(false)
+        }
     }
 
     // If we are in "Share View" (url has ?data=), hide the control panel
     // so the viewer only sees the tree and photos.
-    const isShareView = new URLSearchParams(window.location.search).has('data') || new URLSearchParams(window.location.hash.slice(1)).has('data')
+    const isShareView = new URLSearchParams(window.location.search).has('data') ||
+        new URLSearchParams(window.location.hash.slice(1)).has('data') ||
+        new URLSearchParams(window.location.search).has('id')
     if (isShareView) return null
 
     const handleRename = (id: string, oldName: string) => {
@@ -166,8 +184,8 @@ const ControlPanel = () => {
                     >
                         <Save size={12} /> {activePresetId ? 'Update' : 'Save New'}
                     </button>
-                    <button onClick={handleShare} className="flex-1 bg-white/5 text-white/70 py-1.5 rounded hover:bg-white/10 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-wide transition-colors">
-                        <Share2 size={12} /> Share
+                    <button onClick={handleShare} disabled={isSharing} className="flex-1 bg-white/5 text-white/70 py-1.5 rounded hover:bg-white/10 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-wide transition-colors">
+                        {isSharing ? <span className="animate-pulse">...</span> : <><Share2 size={12} /> Share</>}
                     </button>
                 </div>
             </div>

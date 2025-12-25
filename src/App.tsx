@@ -151,11 +151,28 @@ function ControlsWrapper() {
 function UrlLoader() {
   const setPhotos = useStore(state => state.setPhotos)
   useEffect(() => {
-    // Priority check hash first (new way), then search (legacy way)
-    // We strip the leading '#' from hash for URLSearchParams
+    const searchParams = new URLSearchParams(window.location.search)
+    const id = searchParams.get('id')
+
+    if (id) {
+      // New Server-Side Loading
+      fetch(`/api/load?id=${id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && Array.isArray(data)) {
+            setPhotos(data)
+          } else {
+            console.error("Invalid data format from API")
+          }
+        })
+        .catch(err => console.error("Failed to load preset:", err))
+      return
+    }
+
+    // Legacy Client-Side Loading (Hash/Query)
     let data = new URLSearchParams(window.location.hash.slice(1)).get('data')
     if (!data) {
-      data = new URLSearchParams(window.location.search).get('data')
+      data = searchParams.get('data')
     }
     if (data) {
       try {

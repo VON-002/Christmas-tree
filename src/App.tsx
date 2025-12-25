@@ -14,8 +14,6 @@ import { useEffect } from 'react'
 import BackgroundParticles from './components/3d/BackgroundParticles'
 import StarryBackground from './components/3d/StarryBackground'
 import InnerSparkles from './components/3d/InnerSparkles'
-import { OverlayText } from './components/3d/OverlayText'
-import { WebcamPlane } from './components/3d/WebcamPlane'
 import Star from './components/3d/Star'
 
 function App() {

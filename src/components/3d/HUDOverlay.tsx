@@ -26,12 +26,18 @@ export function HUDOverlay() {
                 color="#d4af37"
                 anchorX="center"
                 anchorY="middle"
-                font="https://fonts.gstatic.com/s/greatvibes/v14/RWm99F8kLExjiGqabsAw7_si.woff"
+                // font removed for stability check
                 outlineWidth={2}
                 outlineColor="#000000"
             >
                 Merry Christmas
             </Text>
+
+            {/* Debug Dot */}
+            <mesh position={[0, 0, 0]}>
+                <circleGeometry args={[10, 32]} />
+                <meshBasicMaterial color="red" />
+            </mesh>
 
             <HUDWebcam width={viewportWidth} height={viewportHeight} />
         </Hud>

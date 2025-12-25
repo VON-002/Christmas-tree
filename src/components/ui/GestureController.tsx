@@ -42,6 +42,7 @@ const GestureController = () => {
     const startVideo = () => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+                useStore.getState().setWebcamStream(stream) // Share stream
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream
                     videoRef.current.play()

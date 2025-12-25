@@ -37,6 +37,8 @@ interface AppState {
     activePresetId: string | null
     presets: Preset[]
     isPreviewMode: boolean
+    webcamStream: MediaStream | null
+    setWebcamStream: (stream: MediaStream | null) => void
     setIsPreviewMode: (val: boolean) => void
     savePreset: (name: string) => void
     updatePreset: () => void
@@ -76,6 +78,8 @@ export const useStore = create<AppState>()(
             presets: [],
             activePresetId: null,
             isPreviewMode: false,
+            webcamStream: null,
+            setWebcamStream: (stream) => set({ webcamStream: stream }),
             setIsPreviewMode: (val) => set({ isPreviewMode: val }),
 
             savePreset: (name) => set((state) => ({

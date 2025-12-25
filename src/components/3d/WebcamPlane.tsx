@@ -9,40 +9,30 @@ export function WebcamPlane() {
     const { viewport } = useThree()
     const isRightHandActive = useStore(s => s.isRightHandActive)
 
+    const webcamStream = useStore(s => s.webcamStream)
+
     useEffect(() => {
         const video = videoRef.current
         video.width = 640
         video.height = 480
         video.autoplay = true
         video.playsInline = true
+        video.muted = true // Essential for autoplay
 
-        // We reuse the stream from your existing camera logic if possible, 
-        // to avoid double permission requests.
-        // Assuming your existing camera logic sets up navigator.mediaDevices
-        // Check if there's already a stream? 
-        // Actually, easiest is just to request it again, browsers handle sharing usually fine.
+        if (webcamStream) {
+            video.srcObject = webcamStream
+            video.play().catch(e => console.error("WebcamPlane play error:", e))
 
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-            .then(stream => {
-                video.srcObject = stream
-                video.play()
-                const texture = new THREE.VideoTexture(video)
-                texture.colorSpace = THREE.SRGBColorSpace
-                setVideoTexture(texture)
-            })
-            .catch(err => console.error("Webcam Plane error:", err))
+            const texture = new THREE.VideoTexture(video)
+            texture.colorSpace = THREE.SRGBColorSpace
+            setVideoTexture(texture)
+        }
 
         return () => {
-            // Don't stop tracks here if other parts use it, but for cleanliness:
-            const stream = video.srcObject as MediaStream
-            if (stream) {
-                // We rely on the App's main camera logic for input, 
-                // this is just for visualization. 
-                // If we stop tracks, main logic might fail.
-                // So let's NOT stop tracks, just nullify.
-            }
+            // Do not stop tracks as they are owned by GestureController
+            video.srcObject = null
         }
-    }, [])
+    }, [webcamStream])
 
     // Position: Bottom Right
     // viewport bottom right is (viewport.width/2, -viewport.height/2)

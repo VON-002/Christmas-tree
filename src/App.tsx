@@ -14,7 +14,7 @@ import { useEffect } from 'react'
 import BackgroundParticles from './components/3d/BackgroundParticles'
 import StarryBackground from './components/3d/StarryBackground'
 import InnerSparkles from './components/3d/InnerSparkles'
-import { HUDOverlay } from './components/3d/HUDOverlay'
+import { CameraFixedOverlay } from './components/3d/CameraFixedOverlay'
 import Star from './components/3d/Star'
 
 function App() {
@@ -59,7 +59,7 @@ function App() {
           <InnerSparkles />
           <BackgroundParticles />
           <StarryBackground />
-          <HUDOverlay />
+          <CameraFixedOverlay />
 
           <EffectsWrapper /> {/* Re-enabling Bloom for glow */}
           <ControlsWrapper />

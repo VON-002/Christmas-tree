@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+
+@layer utilities {
+    .bg-christmas-green {
+        background-color: #000000;
+    }
+}
+
+@tailwind utilities;

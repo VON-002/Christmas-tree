@@ -14,20 +14,15 @@ import { useEffect } from 'react'
 import BackgroundParticles from './components/3d/BackgroundParticles'
 import StarryBackground from './components/3d/StarryBackground'
 import InnerSparkles from './components/3d/InnerSparkles'
+import { OverlayText } from './components/3d/OverlayText'
+import { WebcamPlane } from './components/3d/WebcamPlane'
 import Star from './components/3d/Star'
 
 function App() {
   return (
     <div className="w-full h-screen bg-christmas-green relative overflow-hidden">
 
-      <div className="absolute top-8 left-0 w-full text-center z-10 pointer-events-none">
-        <h1 className="font-serif text-5xl text-christmas-gold tracking-widest drop-shadow-lg opacity-90">
-          MERRY CHRISTMAS
-        </h1>
-        <p className="text-christmas-glow text-sm tracking-[0.5em] mt-2 uppercase opacity-70">
-          Interactive Christmas Tree
-        </p>
-      </div>
+
 
       <Canvas
         camera={{ position: [0, 4, 20], fov: 45 }}
@@ -65,6 +60,8 @@ function App() {
           <InnerSparkles />
           <BackgroundParticles />
           <StarryBackground />
+          <OverlayText />
+          <WebcamPlane />
 
           <EffectsWrapper /> {/* Re-enabling Bloom for glow */}
           <ControlsWrapper />

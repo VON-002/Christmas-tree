@@ -60,8 +60,8 @@ function App() {
           <InnerSparkles />
           <BackgroundParticles />
           <StarryBackground />
-          <OverlayText />
-          <WebcamPlane />
+          {/* <OverlayText /> */}
+          {/* <WebcamPlane /> */}
 
           <EffectsWrapper /> {/* Re-enabling Bloom for glow */}
           <ControlsWrapper />

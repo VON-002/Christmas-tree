@@ -151,8 +151,12 @@ function ControlsWrapper() {
 function UrlLoader() {
   const setPhotos = useStore(state => state.setPhotos)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const data = params.get('data')
+    // Priority check hash first (new way), then search (legacy way)
+    // We strip the leading '#' from hash for URLSearchParams
+    let data = new URLSearchParams(window.location.hash.slice(1)).get('data')
+    if (!data) {
+      data = new URLSearchParams(window.location.search).get('data')
+    }
     if (data) {
       try {
         const photos = JSON.parse(atob(decodeURIComponent(data)))

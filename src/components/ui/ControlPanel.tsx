@@ -92,7 +92,7 @@ const ControlPanel = () => {
 
         const data = JSON.stringify(photos)
         const encoded = encodeURIComponent(btoa(data))
-        const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`
+        const url = `${window.location.origin}${window.location.pathname}#data=${encoded}`
 
         navigator.clipboard.writeText(url).then(() => {
             alert("Share link copied! \n\n(Send this URL to others to show them your tree)")
@@ -103,7 +103,7 @@ const ControlPanel = () => {
 
     // If we are in "Share View" (url has ?data=), hide the control panel
     // so the viewer only sees the tree and photos.
-    const isShareView = new URLSearchParams(window.location.search).has('data')
+    const isShareView = new URLSearchParams(window.location.search).has('data') || new URLSearchParams(window.location.hash.slice(1)).has('data')
     if (isShareView) return null
 
     const handleRename = (id: string, oldName: string) => {

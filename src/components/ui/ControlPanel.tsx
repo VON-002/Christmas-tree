@@ -145,35 +145,58 @@ const ControlPanel = () => {
 
 
     // Fix: actually store the recorder
-    const handleToggleRecord = () => {
+    // Fix: actually store the recorder
+    const handleToggleRecord = async () => {
         if (isRecording) {
             mediaRecorderRef.current?.stop()
+            // Stop all tracks to clear the "sharing" indicator
+            mediaRecorderRef.current?.stream.getTracks().forEach(track => track.stop())
             setIsRecording(false)
         } else {
-            const canvas = document.querySelector('canvas')
-            if (!canvas) return
-            const stream = canvas.captureStream(60)
-            const options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 }
             try {
+                // Use getDisplayMedia to capture the full tab/screen (includes Webcam & Title)
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        displaySurface: 'browser' // Prefer current tab
+                    },
+                    audio: false
+                })
+
+                // If user clicks "Stop Sharing" from browser UI, handle it
+                stream.getVideoTracks()[0].onended = () => {
+                    setIsRecording(false)
+                }
+
+                const options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 }
+
                 const recorder = new MediaRecorder(stream, options)
                 mediaRecorderRef.current = recorder
                 chunksRef.current = []
+
                 recorder.ondataavailable = (e) => {
                     if (e.data.size > 0) chunksRef.current.push(e.data)
                 }
+
                 recorder.onstop = () => {
                     const blob = new Blob(chunksRef.current, { type: 'video/webm' })
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
                     a.href = url
-                    a.download = `christmas-tree-${Date.now()}.webm`
+                    a.download = `christmas-tree-full-${Date.now()}.webm`
                     a.click()
                 }
+
                 recorder.start()
                 setIsRecording(true)
+
             } catch (e) {
-                console.error(e)
-                alert("Recording not supported.")
+                console.error("Recording failed or cancelled:", e)
+                // Don't alert if user just cancelled
+                if ((e as Error).name !== 'NotAllowedError') {
+                    alert("Screen recording failed. Please try again.")
+                }
             }
         }
     }
